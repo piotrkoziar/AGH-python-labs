@@ -130,10 +130,63 @@ def dendrogram_get_points_from_tuple(tp, X):
     
     return sum
 
+# draws vertical lines from lvl_zero to lvl_one for each x-axis coordinate in cl_to_update.
 def dendrogram_vertical_update(cl_to_update, lvl_zero, lvl_one):
     for cl in cl_to_update:
         plt.plot((cl, cl), (lvl_zero, lvl_one), 'r-')        
             
+
+# cluster_merge_table - history of cluster merging: from first to last merge.
+# entry in cluster_merge_table is tuple with two tuples.
+# single_point_clusters - list with initial one-point clusters.
+# X - ([number_of_data] x 2) data matrix, each row corresponds to a single-point (with [x, y] coords) cluster. 
+# dist_diff_list - list of delta distance value between clusters during each merge
+def dendrogram_draw(X, single_point_clusters, cluster_merge_table, dist_diff_list):
+    cl_to_update = []
+    for cl in single_point_clusters:
+        px = dendrogram_get_points_from_tuple((cl,), X)
+        cl_to_update.append(px)
+
+    # current "one" level on the plot
+    diff_one = 0
+    for i in range(len(dist_diff_list)):
+        
+        # current "zero" level on the plot. Initially == 0
+        diff_zero = diff_one
+        # update diff_one
+        diff_one = dist_diff_list[i] + diff_zero
+        print("diff_zero: {}, diff_one: {}".format(diff_zero, diff_one))
+
+        # draw vertical lines to the next level
+        dendrogram_vertical_update(cl_to_update, diff_zero, diff_one)
+
+        # get info about the merge (which clusters, which points was in these clusters).
+        cl_merge_entry = cluster_merge_table[i]
+        clleft = cl_merge_entry[0]
+        clright = cl_merge_entry[1]
+        print("clleft: {}, clright: {}".format(clleft, clright))
+
+        # get x-axis coords for clusters.
+        p_xm1 = dendrogram_get_points_from_tuple(clleft, X)
+        p_xm2 = dendrogram_get_points_from_tuple(clright, X)
+        # cluster horizontal lines will no longer be updated (they are presented as one merged cluster from now)
+        # Note that in the first iteration there are only one-point clusters in the update list. 
+        cl_to_update.remove(p_xm1)
+        cl_to_update.remove(p_xm2)
+        # find a place where the horizontal line will start and add it to the update list.
+        p_xm3 = dendrogram_get_points_from_tuple(clleft + clright, X)
+        cl_to_update.append(p_xm3)
+        
+        plt.plot((p_xm1, p_xm2), (diff_one, diff_one), 'r-')
+
+    # reference
+    plt.figure(figsize=(10, 7))
+    plt.title("Customer Dendograms")
+    dend = sch.dendrogram(sch.linkage(X, method='ward'))
+    # cluster = AgglomerativeClustering(n_clusters=2, affinity='euclidean', linkage='ward')
+    # cluster.fit_predict(X)
+    # print(cluster.labels_)
+    # plt.scatter(X[:,0],X[:,1], c=cluster.labels_, cmap='rainbow')
 
 print("start")
 p_d.prepare_data("./sport", 100)
@@ -145,75 +198,20 @@ X = data.iloc[[0, 1], :].values
 # print(X)
 X = X.transpose()
 print(X.shape)
-X = X[0:15]
+X = X[0:150]
 print(X)
 plt.scatter(X[:,0],X[:,1])
+
 prox, prox_dict = proximity_matrix(X)
 # print(prox)
 glob_high = 0
 cluster_merge_table, dist_diff_list, glob_high = agglomerative(prox, prox_dict, glob_high)
 p_d.print_dict(prox_dict)
+print(glob_high)
 for i in dist_diff_list: print(i)
 for i in cluster_merge_table: print(i)
 
-x = np.linspace(0, len(dist_diff_list) + 1)
-
-fig, ax = plt.subplots()
-
-cl_to_update = []
-for cl in prox_dict[0]:
-    px = dendrogram_get_points_from_tuple((cl,), X)
-    cl_to_update.append(px)
-
-# current "one" level on the plot
-diff_one = 0
-for i in range(len(dist_diff_list)):
-    
-    # current "zero" level on the plot. Initially == 0
-    diff_zero = diff_one
-    # update diff_one
-    diff_one = dist_diff_list[i] + diff_zero
-
-    # draw vertical lines to the next level
-    dendrogram_vertical_update(cl_to_update, diff_zero, diff_one)    
-
-    p_ym1 = diff_zero
-    p_ym2 = diff_zero
-
-    # entry in cluster_merge_table is tuple with two tuples.
-    cl_merge_entry = cluster_merge_table[i]
-    clleft = cl_merge_entry[0]
-    clright = cl_merge_entry[1]
-
-    print("clleft: {}, clright: {}".format(clleft, clright))
-
-    p_xm1 = dendrogram_get_points_from_tuple(clleft, X)
-    p_xm2 = dendrogram_get_points_from_tuple(clright, X)
-
-    cl_to_update.remove(p_xm1)
-    cl_to_update.remove(p_xm2)
-
-    p_xm3 = dendrogram_get_points_from_tuple(clleft + clright, X)
-    cl_to_update.append(p_xm3)
-
-    print("p_xmi: {}, p_xma: {}".format(p_xm1, p_xm2))
-    print("diff_zero: {}, diff_one: {}".format(diff_zero, diff_one))
-
-    plt.plot((p_xm1, p_xm2), (diff_one, diff_one), 'r-')
-    # plt.plot((p_xm1, p_xm1), (p_ym1, diff_one), 'r-')
-    # plt.plot((p_xm2, p_xm2), (p_ym2, diff_one), 'r-')
-    # ax.hlines(y=diff_one, xmin=p_xmi, xmax=p_xma, linewidth=2, color='r')
-    # ax.axvline(x=p_xmi, ymin=diff_zero, ymax=diff_one, linewidth=2, color='r')
-    # ax.axvline(x=p_xma, ymin=diff_zero, ymax=diff_one, linewidth=2, color='r')
+dendrogram_draw(X, prox_dict[0], cluster_merge_table, dist_diff_list)
 
 
-
-# reference
-# plt.figure(figsize=(10, 7))
-# plt.title("Customer Dendograms")
-# dend = sch.dendrogram(sch.linkage(X, method='ward'))
-# cluster = AgglomerativeClustering(n_clusters=2, affinity='euclidean', linkage='ward')
-# cluster.fit_predict(X)
-# print(cluster.labels_)
-# plt.scatter(X[:,0],X[:,1], c=cluster.labels_, cmap='rainbow')
 plt.show()
