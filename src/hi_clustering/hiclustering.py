@@ -1,6 +1,7 @@
 import math
 import pandas as pd
 import numpy as np
+import prepare_data as p_d
 from matplotlib import pyplot as plt
 from sklearn.cluster import AgglomerativeClustering
 import scipy.cluster.hierarchy as sch

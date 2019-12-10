@@ -12,8 +12,7 @@ p_d.prepare_data(path_to_file, 20)
 
 Prepared data is a directory where:
 key = word (from the text file)
-value = [x, y], where x = number of files in which the word has appeared
-                      y = number of times the word has appeared
+value = [x, y], where x = number of files in which the word has appeared, y = number of times the word has appeared
 
 The dendrogram is prepared if draw==True
 
