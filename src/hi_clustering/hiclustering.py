@@ -1,6 +1,4 @@
-import prepare_data as p_d
 import math
-
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
@@ -174,7 +172,6 @@ def dendrogram(single_point_clusters, cluster_merge_table, dist_diff_list, thres
             p_xm2 = dendrogram_get_x_position(clright, cl_order)
             # cluster horizontal lines will no longer be updated (they are presented as one merged cluster from now)
             # Note that in the first iteration there are only one-point clusters in the update list. 
-            print("remove from uodate")
             cl_to_update.remove(p_xm1)
             cl_to_update.remove(p_xm2)
             # find a place where the horizontal line will start and add it to the update list.
@@ -203,13 +200,31 @@ def clusters_draw(clusters, X):
     plt.subplot(2, 1, 1)
     plt.scatter(X[:, 0], X[:, 1], c=label, cmap='rainbow')#[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
 
+def hiclust(X):
+    prox, prox_dict = proximity_matrix(X)
+    # print(prox)
+    cluster_merge_table, dist_diff_list, glob_high, glob_high_dist = agglomerative(prox, prox_dict)
+    p_d.print_dict(prox_dict)
+    print(glob_high)
+    print(glob_high_dist)
+    for i in dist_diff_list: print(i)
+    for i in cluster_merge_table: print(i)
+
+    threshold = glob_high_dist - glob_high/2
+    # threshold = threshold/2
+
+    clusters = dendrogram(prox_dict[0], cluster_merge_table, dist_diff_list, threshold, True)
+
+    print(threshold)
+    for i in clusters: print(i)
+
+    clusters_draw(clusters, X)
+
+    plt.show()
 
 
-print("start")
 p_d.prepare_data("./test/france", 20)
-# p_d.print_dict(p_d.globaldict)
-# eucl_dist(p_d.globaldict["the"], p_d.globaldict["a"])
-
+# p_d.prepare_data(path, n)
 data = pd.DataFrame.from_dict(p_d.globaldict)
 X = data.iloc[[0, 1], :].values
 # print(X)
@@ -219,24 +234,4 @@ print(X.shape)
 X = X[0:1000]
 print(X)
 # plt.scatter(X[:,0],X[:,1])
-
-prox, prox_dict = proximity_matrix(X)
-# print(prox)
-cluster_merge_table, dist_diff_list, glob_high, glob_high_dist = agglomerative(prox, prox_dict)
-p_d.print_dict(prox_dict)
-print(glob_high)
-print(glob_high_dist)
-for i in dist_diff_list: print(i)
-for i in cluster_merge_table: print(i)
-
-threshold = glob_high_dist - glob_high/2
-# threshold = threshold/2
-
-clusters = dendrogram(prox_dict[0], cluster_merge_table, dist_diff_list, threshold, True)
-
-print(threshold)
-for i in clusters: print(i)
-
-clusters_draw(clusters, X)
-
-plt.show()
+hiclust(X, n)

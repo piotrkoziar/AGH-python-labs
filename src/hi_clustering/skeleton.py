@@ -19,7 +19,9 @@ import argparse
 import sys
 import logging
 
+import prepare_data as p_d
 from hi_clustering import __version__
+from hi_clustering import hiclustering.py
 
 __author__ = "piotrkoziar"
 __copyright__ = "piotrkoziar"
@@ -28,20 +30,23 @@ __license__ = "mit"
 _logger = logging.getLogger(__name__)
 
 
-def fib(n):
-    """Fibonacci example function
-
-    Args:
-      n (int): integer
-
-    Returns:
-      int: n-th Fibonacci number
+def fib(path, n):
+    """Hierarchical Clustering
+    
     """
-    assert n > 0
-    a, b = 1, 1
-    for i in range(n-1):
-        a, b = b, a+b
-    return a
+
+    #p_d.prepare_data("./test/france", 20)
+    p_d.prepare_data(path, n)
+    data = pd.DataFrame.from_dict(p_d.globaldict)
+    X = data.iloc[[0, 1], :].values
+    # print(X)
+    X = X.transpose()
+    print(X.shape)
+    # X - ([number_of_data] x 2) data matrix, each row corresponds to a single-point (with [x, y] coords) cluster.
+    X = X[0:1000]
+    print(X)
+    # plt.scatter(X[:,0],X[:,1])
+    hiclust(X, n)
 
 
 def parse_args(args):
@@ -64,6 +69,12 @@ def parse_args(args):
         help="n-th Fibonacci number",
         type=int,
         metavar="INT")
+    parser.add_argument(
+        dest="p",
+        help="path to directory with test txt files",
+        type=string,
+        metavar="string")
+    )
     parser.add_argument(
         "-v",
         "--verbose",
