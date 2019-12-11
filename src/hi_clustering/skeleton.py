@@ -30,23 +30,18 @@ __license__ = "mit"
 _logger = logging.getLogger(__name__)
 
 
-def fib(path, n):
+def f(path, n):
     """Hierarchical Clustering
     
     """
-
-    #p_d.prepare_data("./test/france", 20)
     p_d.prepare_data(path, n)
     data = pd.DataFrame.from_dict(p_d.globaldict)
     X = data.iloc[[0, 1], :].values
-    # print(X)
     X = X.transpose()
     print(X.shape)
-    # X - ([number_of_data] x 2) data matrix, each row corresponds to a single-point (with [x, y] coords) cluster.
     X = X[0:1000]
     print(X)
-    # plt.scatter(X[:,0],X[:,1])
-    hiclust(X, n)
+    hiclust(X)
 
 
 def parse_args(args):
@@ -111,8 +106,7 @@ def main(args):
     """
     args = parse_args(args)
     setup_logging(args.loglevel)
-    _logger.debug("Starting crazy calculations...")
-    print("The {}-th Fibonacci number is {}".format(args.n, fib(args.n)))
+    f(args.path, args.n)
     _logger.info("Script ends here")
 
 

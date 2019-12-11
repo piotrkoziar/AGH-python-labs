@@ -224,7 +224,7 @@ def hiclust(X):
     plt.show()
 
 
-p_d.prepare_data("./test/france", 20)
+p_d.prepare_data("./test/france", 10)
 # p_d.prepare_data(path, n)
 data = pd.DataFrame.from_dict(p_d.globaldict)
 X = data.iloc[[0, 1], :].values
@@ -232,7 +232,7 @@ X = data.iloc[[0, 1], :].values
 X = X.transpose()
 print(X.shape)
 # X - ([number_of_data] x 2) data matrix, each row corresponds to a single-point (with [x, y] coords) cluster.
-X = X[0:1000]
+X = X[0:100]
 print(X)
 # plt.scatter(X[:,0],X[:,1])
-hiclust(X, n)
+hiclust(X)
